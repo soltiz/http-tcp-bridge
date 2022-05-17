@@ -6,13 +6,18 @@ from flask import Flask
 from flask import request
 from flask import Response
 import socket
-
+import os
 
 app = Flask(__name__)
+
+
+target_host=os.environ.get('BACKEND_HOST','localhost')
+target_port=int(os.environ.get('BACKEND_PORT',12345))
 
 @app.route("/hi")
 def hello_world():
     return "<p>Hello, World!</p>"
+
 
 
 @app.route('/ingest', methods=['POST'])
@@ -25,16 +30,15 @@ def hello_data():
 
     # print("Incoming data : " + str(incoming))
     try:
-        host = socket.gethostname()
-        port = 12345                   # The same port as used by the server
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((host, port))
+        s.connect((target_host, target_port))
         s.sendall(incoming )
         #data = s.recv(1024)
         #print('Received', repr(data))
         s.close()
         status_code = Response(status=200)
     except Exception as e:
+        print(e)
         return {"error": str(e)}, 500
 
         #status_code = Response(status=500)
